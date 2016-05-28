@@ -134,5 +134,5 @@ where
  * `receiverPort` can be any value you wish but must match what is set when
     the receiver comms_robot is started. 
     
-NOTE: do not start the comms_robot transmitter until after the comms_robot
-transmitter has started. 
+NOTE: do not start the comms_robot transmitter until after the 
+comms_robot_receiver has started. 
