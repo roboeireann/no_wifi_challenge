@@ -107,7 +107,7 @@ Copy the comms_robot executable to the Nao you will be using as the receiver.
 
 To start the example code in receiver mode type
 
-    comms_robot R <listenPort> <commsTesterHost> <commsTesterPort>
+    comms_robot R <listenPortFromT> <commsTesterHost> <commsTesterPort>
 
 where
     
@@ -124,7 +124,7 @@ started.
 Copy the comms_robot executable to the Nao you will be using as the transmitter.
 To start the example code in transmitter mode type
 
-    comms_robot T <listenPort> <receiverHost> <receiverPort>
+    comms_robot T <listenPortfromCommsTester> <receiverHost> <receiverPort>
 
 where
     
@@ -135,4 +135,4 @@ where
     the receiver comms_robot is started. 
     
 NOTE: do not start the comms_robot transmitter until after the 
-comms_robot_receiver has started. 
+comms_robot receiver has started. 

@@ -51,7 +51,7 @@ public class TransmitterConnection {
 			toTransmitter = new Socket(host, port);
 			toTransmitter.setTcpNoDelay(false); // disable nagle's algorithm
 		} catch (UnknownHostException e) {
-			logger.severe("Unknown transmitter host: " + host);
+			logger.warning("Unknown transmitter host: " + host);
 			return false;
 		} catch (IOException e) {
 			logger.severe("Problem connecting to transmitter: " + e.getMessage());

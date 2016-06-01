@@ -76,9 +76,9 @@ int testingPercentErrors = 0;
 
 void usageExit(int code) {
     std::cerr << "Usage:\n"
-            "\trobotcomms T <listeningPort> <remoteReceiverIP> <remoteReceiverPort>\n"
+            "\trobotcomms T <listenPortForCommsTester> <receiverHost> <receiverPort>\n"
             "\tor\n"
-            "\trobotcomms R <listeningPort> <commsTesterIP> <commsTesterPort>\n\n";
+            "\trobotcomms R <listenPortForTransmitter> <commsTesterHost> <commsTesterPort>\n\n";
     exit(code);
 }
 

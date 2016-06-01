@@ -68,7 +68,7 @@ public class MainFrame extends JFrame implements ActionListener, ConnectionChang
 		txPortTextField.setText(String.valueOf(SPLNoWifiConstants.DEFAULT_TRANSMITTER_ROBOT_PORT));
 		txStatusLabel = new JLabel("TODO");
 		
-		txConnectButton = new JButton("Connect T");
+		txConnectButton = new JButton("Connect transmitter, T");
 		txConnectButton.setActionCommand("TX_CONNECT");
 		txConnectButton.addActionListener(this);
 
@@ -76,7 +76,7 @@ public class MainFrame extends JFrame implements ActionListener, ConnectionChang
 		rxPortTextField.setText(String.valueOf(SPLNoWifiConstants.COMMS_TESTER_PORT));
 		rxStatusLabel = new JLabel("TODO");
 		
-		rxConnectButton = new JButton("Reset connection R");
+		rxConnectButton = new JButton("Reset connection to receiver, R");
 		rxConnectButton.setActionCommand("RX_RESET");
 		rxConnectButton.addActionListener(this);
 		
@@ -125,12 +125,12 @@ public class MainFrame extends JFrame implements ActionListener, ConnectionChang
 				
 		// fields related to robot T
 		
-		pane.add(new JLabel("Connection to transmitter, T"), "1,1,3,1");
+		pane.add(new JLabel("Connection to T"), "1,1,3,1");
 		
-		pane.add(new JLabel("Host"), "1,3,l,f");
+		pane.add(new JLabel("Remote Host"), "1,3,l,f");
 		pane.add(txHostTextField, "3,3");
 		
-		pane.add(new JLabel("Port"), "1,5,l,f");
+		pane.add(new JLabel("Remote Port"), "1,5,l,f");
 		pane.add(txPortTextField, "3,5");
 		
 		pane.add(new JLabel("Status"), "1,7,l,f");
@@ -140,9 +140,9 @@ public class MainFrame extends JFrame implements ActionListener, ConnectionChang
 		
 		// fields related to robot R
 		
-		pane.add(new JLabel("Connection to receiver, R"), "5,1,7,1");
+		pane.add(new JLabel("Connection from receiver, R"), "5,1,7,1");
 		
-		pane.add(new JLabel("Port"), "5,3,l,f");
+		pane.add(new JLabel("Listen Port"), "5,3,l,f");
 		pane.add(rxPortTextField, "7,3");
 
 		pane.add(new JLabel("Status"), "5,7,l,f");

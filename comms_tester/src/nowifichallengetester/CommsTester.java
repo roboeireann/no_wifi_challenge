@@ -186,14 +186,14 @@ public class CommsTester {
         logger.info("Received message: " + rxMessage);
 
         if (txMessage == null) {
-            logger.severe(
+            logger.warning(
                     "No transmitted message or transmitted message expired.");
             return;
         }
 
         // we have a transmitted message to compare with
         if (!txMessage.header.equals(rxMessage.header)) {
-            logger.severe(
+            logger.warning(
                     "Received message header does not match transmitted.");
             logger.fine(String.format("txHeader %d, rxHeader %d", 
                     txMessage.header.type,
@@ -205,7 +205,7 @@ public class CommsTester {
         // the header is OK and the type matches
         if (txMessage.header.type == SPLNoWifiMessage.TYPE_LOCATION) {
             if (rxMessage.location == null) {
-                logger.severe("Received location message payload missing.");
+                logger.warning("Received location message payload missing.");
                 rxError = true;
 
             } else if (hasTxTimeoutExpired()) {
@@ -213,12 +213,12 @@ public class CommsTester {
                 
             } else if (Math.abs(rxMessage.location.x
                     - txMessage.location.x) > SPLNoWifiConstants.LOCATION_TOLERANCE_MM) {
-                logger.severe("Received location.x mismatch too big.");
+                logger.warning("Received location.x mismatch too big.");
                 rxError = true;
 
             } else if (Math.abs(rxMessage.location.y
                     - txMessage.location.y) > SPLNoWifiConstants.LOCATION_TOLERANCE_MM) {
-                logger.severe("Received location.y mismatch too big.");
+                logger.warning("Received location.y mismatch too big.");
                 rxError = true;
 
             } else {
@@ -229,22 +229,22 @@ public class CommsTester {
 
         } else  if (txMessage.header.type == SPLNoWifiMessage.TYPE_DATA) {
             if (rxMessage.data == null) {
-                logger.severe("Received data message payload missing.");
+                logger.warning("Received data message payload missing.");
                 rxError = true;
 
             } else if ((rxMessage.data.fragmentOffset < 0) 
                     || (rxMessage.data.fragmentOffset > txMessage.data.fragmentLength)) {
-                logger.severe("Received data payload offset is invalid.");
+                logger.warning("Received data payload offset is invalid.");
                 rxError = true;
                 
             } else if ((rxMessage.data.fragmentLength < 0)
                     || ((rxMessage.data.fragmentLength
                             + rxMessage.data.fragmentOffset) > txMessage.data.fragmentLength)) {
-                logger.severe("Received data payload length is invalid.");
+                logger.warning("Received data payload length is invalid.");
                 rxError = true;
                 
             } else if (rxMessage.data.data == null) {
-                logger.severe("Received data payload data is missing.");
+                logger.warning("Received data payload data is missing.");
                 rxError = true;
                 
             } else if (hasTxTimeoutExpired()) {
@@ -321,7 +321,7 @@ public class CommsTester {
                 // no message received yet
                 
                 if (hasTxTimeoutExpired()) {
-                    logger.severe("No location message received within permitted time");
+                    logger.warning("No location message received within permitted time");
                     clearTxMessage();
                 }
             } else {
@@ -332,7 +332,7 @@ public class CommsTester {
                     logger.info(String.format("Received location message arrived on time in %d ms",
                             timeOfFlight));
                 else
-                    logger.severe("Location message received too late");
+                    logger.warning("Location message received too late");
                 
                 clearTxMessage();
             }
@@ -345,7 +345,7 @@ public class CommsTester {
                 // no message received yet
 
                 if (hasTxTimeoutExpired()) {
-                    logger.severe("No data message received within permitted time");
+                    logger.warning("No data message received within permitted time");
                     clearTxMessage();
                 }
             } else {
