@@ -40,7 +40,7 @@
     	
         <jar destfile="${jar.dir}/CommsTester.jar" basedir="${classes.dir}">
             <manifest>
-                <attribute name="Main-Class" value="nowifichallengetester.CommsChallengeTester"/>
+                <attribute name="Main-Class" value="nowifichallengetester.CommsTester"/>
                 <attribute name="Class-Path" value="${libs.dir}/tablelayout.jar" />
             </manifest>
         </jar>
