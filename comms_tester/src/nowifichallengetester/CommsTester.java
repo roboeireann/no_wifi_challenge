@@ -34,6 +34,11 @@ public class CommsTester {
 	final static long TIME_NOT_SET = 0;
 	final static int ENCRYPTION_PAD_SIZE = 1000;
 	
+	// this is the maximum acceptable error percentage before we suspect 
+	// that some fraction of the packet was randomly guessed rather than being
+	// transmitted (badly)
+	final static float MAX_NORMAL_BYTE_ERROR_PERCENTAGE = 60f;
+	
 	// we tidy up after timeout by polling with this period
 	// (Note: we prevent any messages that are later than the millisecond
 	// accurate timeout from being accepted, so the period here can be quite coarse)
@@ -52,10 +57,13 @@ public class CommsTester {
 	int rxDataTotalCount; // total num data bytes received (including duplicates, errors, etc)
 	int rxDataUniqueCount; // number of unique bytes received (including unique errors, etc)
 	int rxDataMatchCount; // total number of data bytes that were matched
-	int rxDataDuplicateMatchCount; // total number of data bytes that were duplicate matches
+	int rxDataDuplicateCount; // total number of data bytes that were duplicate matches
 	int rxDataErrorCount; // total number of mismatching bytes received
 	boolean[] rxMessageMatches;
-    boolean[] rxMessageReceived;
+    int[] rxMessageReceived;
+    int rxDataMinLength;
+    int rxDataMaxLength;
+    int rxDataGuessPacketCount;
 	
 	byte[] encryptionPad = null;
 	
@@ -72,7 +80,7 @@ public class CommsTester {
 	
 	private CommsTester() {
 	    rxMessageMatches = new boolean[SPLNoWifiConstants.DATA_PAYLOAD_MAX_LEN];
-	    rxMessageReceived = new boolean[SPLNoWifiConstants.DATA_PAYLOAD_MAX_LEN];
+	    rxMessageReceived = new int[SPLNoWifiConstants.DATA_PAYLOAD_MAX_LEN];
 	    
 	    // if using encryption of data, uncomment the next lines
 	    encryptionPad = new byte[1000];
@@ -144,10 +152,15 @@ public class CommsTester {
 		rxDataTotalCount = 0;
 		rxDataUniqueCount = 0;
 		rxDataMatchCount = 0;
-		rxDataDuplicateMatchCount = 0;
+		rxDataDuplicateCount = 0;
 		rxDataErrorCount = 0;
+		
+	    rxDataMinLength = SPLNoWifiMessage.DATA_SIZE;
+	    rxDataMaxLength = 0;
+	    rxDataGuessPacketCount = 0;
+	    
 		Arrays.fill(rxMessageMatches, false);
-        Arrays.fill(rxMessageReceived, false);
+        Arrays.fill(rxMessageReceived, 0);
 		
 		logger.info("------------------------------------------------------");
 		logger.info("Transmitted message: " + txMessage);
@@ -262,46 +275,66 @@ public class CommsTester {
                 // individual data bytes
                 
                 // now check the matches - 
-                // Note that we don't want to double count matches if
-                // multiple fragments overlap
+                // Note that we don't want to double count bytes if
+                // multiple fragments overlap -- only the first receipt of
+                // any byte counts toward the final data rate
                 int nMatches = 0;
                 int nNewMatches = 0;
                 int nUniqueReceived = 0;
+                int nDuplicates = 0;
+                int nErrors = 0;
                 
                 int rxOffset = rxMessage.data.fragmentOffset;
                 
                 for (int i = 0; i < rxMessage.data.fragmentLength; i++) {
                     // have we already received this data byte?
-                    if (!rxMessageReceived[rxOffset + i]) {
+                    rxMessageReceived[rxOffset + i]++;
+                    if (rxMessageReceived[rxOffset + i] == 1)
+                    {
                         nUniqueReceived++;
-                        rxMessageReceived[rxOffset + i] = true;
-                    }
                     
-                    // does the received data byte match what we sent?
-                    if (rxMessage.data.data[i] == 
-                            txMessage.data.data[rxOffset + i]) {
-                        nMatches++;
-                        
-                        // is this the first time we've matched this data byte?
-                        if (!rxMessageMatches[rxOffset + i]) {
+                        // does the received data byte match what we sent?
+                        if (rxMessage.data.data[i] == 
+                                txMessage.data.data[rxOffset + i]) {
+                            nMatches++;
                             nNewMatches++;
-                            rxMessageMatches[rxOffset + i] = true;
+                            
+//                            // is this the first time we've matched this data byte?
+//                            if (!rxMessageMatches[rxOffset + i]) {
+//                                nNewMatches++;
+//                                rxMessageMatches[rxOffset + i] = true;
+//                            }
+                        } else {
+                            nErrors++;
                         }
+                        
+                    } else {
+                        nDuplicates++; // this is a duplicate byte
                     }
                 }
 
-                int nDuplicates = nMatches - nNewMatches;
-                int nErrors = rxMessage.data.fragmentLength - nMatches;
+//                int nErrors = rxMessage.data.fragmentLength - nMatches;
                 
                 rxDataTotalCount += rxMessage.data.fragmentLength;
                 rxDataUniqueCount += nUniqueReceived;
                 rxDataMatchCount += nNewMatches;
-                rxDataDuplicateMatchCount += nDuplicates;
+                rxDataDuplicateCount += nDuplicates;
                 rxDataErrorCount += nErrors;
                 
+                if (rxMessage.data.fragmentLength > rxDataMaxLength)
+                    rxDataMaxLength = rxMessage.data.fragmentLength;
+                if (rxMessage.data.fragmentLength < rxDataMinLength)
+                    rxDataMinLength = rxMessage.data.fragmentLength;
+                
+                float byteErrorPercentage = nUniqueReceived > 0 ?
+                        100f * (float) nErrors / nUniqueReceived : 0;
+                     
+                if (byteErrorPercentage > MAX_NORMAL_BYTE_ERROR_PERCENTAGE)
+                    rxDataGuessPacketCount++;
+                
                 logger.info(String.format(
-                        "  %d matches, %d duplicates, %d errors (cumulative %d matches])",
-                        nNewMatches, nDuplicates, nErrors, 
+                        "  %d matches, %d errors (%.2f %%), %d duplicates (cumulative %d matches])",
+                        nNewMatches, nErrors, byteErrorPercentage, nDuplicates,
                         rxDataMatchCount));
             }
         }
@@ -380,10 +413,31 @@ public class CommsTester {
                             delayLast));
                     logger.info(String.format("  received %d unique bytes, matched %d", 
                             rxDataUniqueCount, rxDataMatchCount));
-                    logger.info(String.format("  (received %d total bytes including %d duplicate matches and %d errors)", 
-                            rxDataTotalCount, rxDataDuplicateMatchCount, rxDataErrorCount));
+                    logger.info(String.format("  (received %d total bytes including %d duplicates and %d first time errors)", 
+                            rxDataTotalCount, rxDataDuplicateCount, rxDataErrorCount));
                     logger.info(String.format("  error free data rate = %.2f matched bytes/sec",
                             (float) rxDataMatchCount * 1000.0f / duration));
+                    
+                    if (rxDataGuessPacketCount > 0) {
+                        logger.warning(String.format(
+                                "  high error rate in %d packets may indicate random guessing was used",
+                                rxDataGuessPacketCount));
+                        
+                        logger.warning("  review log for error rate on individual packets");
+                        
+                        logger.warning(String.format("  min data len = %d, max data len = %d",
+                                rxDataMinLength, rxDataMaxLength));
+
+                        float byteErrorPercentage = 100f
+                                * (float) (rxDataUniqueCount - rxDataMatchCount)
+                                / rxDataUniqueCount;
+                        
+                        logger.warning(String.format(
+                                "  overall byte error percentage = %.2f",
+                                byteErrorPercentage));
+
+                        logger.warning("  data result may need to be discounted");
+                    }
                     
                     clearTxMessage();
                 }

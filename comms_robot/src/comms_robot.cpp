@@ -33,6 +33,7 @@
 
 #include <iostream>
 #include <string>
+#include <cstring>
 
 
 #include "SPLNoWifiChallenge.h"
@@ -405,6 +406,22 @@ void receiverRobot(int listeningPort, const char* remoteIP, int remotePort)
 
             if (testingReceiverToCommsTesterEnabled) {
                 std::cout << "forwarding...";
+
+//                // test TR's hack (first fragment only)
+//                if (simNoWifiDataPayloadHeader.offset == 0)
+//                {
+//                    SPLNoWifiPacket packet;
+//                    packet.header.type = SPL_NO_WIFI_PAYLOAD_TYPE_DATA;
+//                    packet.payload.data.header.fragmentOffset = 0;
+//                    packet.payload.data.header.fragmentLength = SPL_NO_WIFI_DATA_PAYLOAD_MAX_LEN;
+//
+//                    for(int i = 0; i < 256; ++i)
+//                    {
+//                        std::memset(packet.payload.data.data, i, SPL_NO_WIFI_DATA_PAYLOAD_MAX_LEN);
+//                        toCommsTester.sendData(&packet, sizeof(packet));
+//                    }
+//                }
+
 
                 SPLNoWifiPacket packet;
 
