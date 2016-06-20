@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project basedir="." default="jar" name="comms_challenge_tester">
+<project basedir="." default="jar" name="comms_tester">
     <property environment="env"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.7"/>
@@ -9,7 +9,7 @@
     <property name="jar.dir"     value="."/>
     <property name="libs.dir"    value="libs"/>
 	
-    <path id="comms_challenge_tester.classpath">
+    <path id="comms_tester.classpath">
         <pathelement location="bin"/>
         <pathelement location="libs/tablelayout.jar"/>
     </path>
@@ -31,7 +31,7 @@
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="${classes.dir}" includeantruntime="false" source="${source}" target="${target}">
             <src path="src"/>
-            <classpath refid="comms_challenge_tester.classpath"/>
+            <classpath refid="comms_tester.classpath"/>
         </javac>
     </target>
 
@@ -40,7 +40,7 @@
     	
         <jar destfile="${jar.dir}/CommsTester.jar" basedir="${classes.dir}">
             <manifest>
-                <attribute name="Main-Class" value="nowifichallengetester.CommsChallengeTester"/>
+                <attribute name="Main-Class" value="nowifichallengetester.CommsTester"/>
                 <attribute name="Class-Path" value="${libs.dir}/tablelayout.jar" />
             </manifest>
         </jar>
